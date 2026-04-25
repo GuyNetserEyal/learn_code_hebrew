@@ -52,6 +52,8 @@ const storyObjectMeta = {
   key: { label: "מפתח", emoji: "🗝️" },
   door: { label: "דלת", emoji: "🚪" },
   friend: { label: "חברה", emoji: "👧" },
+  gift: { label: "מתנה", emoji: "🎁" },
+  lights: { label: "אורות", emoji: "💡" },
   party: { label: "מסיבה", emoji: "🎉" },
 };
 
@@ -75,6 +77,16 @@ const storyConditionMeta = {
     label: "אם החברה הוזמנה",
     pseudo: "החברה הוזמנה",
     js: "state.friendInvited",
+  },
+  giftPacked: {
+    label: "אם המתנה ארוזה",
+    pseudo: "המתנה ארוזה",
+    js: "state.giftPacked",
+  },
+  lightsOn: {
+    label: "אם האורות דולקים",
+    pseudo: "האורות דולקים",
+    js: "state.lightsOn",
   },
   catHappy: {
     label: "אם החתול רגוע",
@@ -126,6 +138,20 @@ const storyActionMeta = {
     effects: { friendInvited: true },
     feedback: "החברה הוזמנה למסיבה.",
   },
+  packGift: {
+    label: "ארזי מתנה",
+    pseudo: "ארזי מתנה",
+    js: "packGift();",
+    effects: { giftPacked: true },
+    feedback: "המתנה ארוזה ומוכנה למסיבה.",
+  },
+  turnOnLights: {
+    label: "הדליקי אורות",
+    pseudo: "הדליקי אורות",
+    js: "turnOnLights();",
+    effects: { lightsOn: true },
+    feedback: "האורות נדלקו, ועכשיו הכול מוכן לחגיגה.",
+  },
   startParty: {
     label: "התחילי מסיבה",
     pseudo: "התחילי מסיבה",
@@ -140,6 +166,8 @@ const storyFlagMeta = {
   hasKey: { label: "יש מפתח", emoji: "🗝️" },
   doorOpen: { label: "הדלת פתוחה", emoji: "🚪" },
   friendInvited: { label: "החברה הוזמנה", emoji: "👧" },
+  giftPacked: { label: "המתנה ארוזה", emoji: "🎁" },
+  lightsOn: { label: "האורות דולקים", emoji: "💡" },
   partyStarted: { label: "המסיבה התחילה", emoji: "🎉" },
 };
 
@@ -1108,6 +1136,130 @@ const modules = [
           { type: "story-rule", event: "party", condition: "doorOpen", action: "startParty" },
         ],
       },
+      {
+        id: "story-4",
+        mode: "story",
+        title: "קודם מרגיעות, ואז מזמינות",
+        instruction: "הפעם החברה תבוא רק אם החתול כבר רגוע. אחר כך עדיין צריך לקחת מפתח, לפתוח את הדלת, ורק אז להתחיל את המסיבה.",
+        hint: "החברה צריכה כלל עם תנאי של 'אם החתול רגוע'.",
+        objective: "לבנות שרשרת של מצבים שתלויים זה בזה",
+        maxProgramLength: 5,
+        boardSize: 5,
+        start: { x: 0, y: 4, dir: "E" },
+        goal: { x: 0, y: 4 },
+        stars: [],
+        walls: [],
+        features: ["story-rule"],
+        storyObjects: ["cat", "friend", "key", "door", "party"],
+        storyObjectOptions: ["cat", "friend", "key", "door", "party"],
+        storyConditionOptions: ["always", "catHappy", "hasKey", "doorOpen"],
+        storyActionOptions: ["sayHello", "inviteFriend", "takeKey", "openDoor", "startParty"],
+        storyInitialFlags: {},
+        storyGoalFlags: { catHappy: true, friendInvited: true, doorOpen: true, partyStarted: true },
+        requiredStoryActions: ["sayHello", "inviteFriend", "takeKey", "openDoor", "startParty"],
+        requiredStoryConditions: ["catHappy", "hasKey", "doorOpen"],
+        solutionProgram: [
+          { type: "story-rule", event: "cat", condition: "always", action: "sayHello" },
+          { type: "story-rule", event: "friend", condition: "catHappy", action: "inviteFriend" },
+          { type: "story-rule", event: "key", condition: "always", action: "takeKey" },
+          { type: "story-rule", event: "door", condition: "hasKey", action: "openDoor" },
+          { type: "story-rule", event: "party", condition: "doorOpen", action: "startParty" },
+        ],
+      },
+      {
+        id: "story-5",
+        mode: "story",
+        title: "מסיבת הפתעה מלאה",
+        instruction: "כאן כבר צריך להכין הכול: להרגיע את החתול, להזמין חברה, לארוז מתנה, לקחת מפתח, לפתוח דלת, ורק אז להתחיל את המסיבה.",
+        hint: "המתנה צריכה להיארז רק אחרי שהחברה הוזמנה.",
+        objective: "לנהל סיפור שלם עם כמה מצבים שנשמרים לאורך הדרך",
+        maxProgramLength: 6,
+        boardSize: 5,
+        start: { x: 0, y: 4, dir: "E" },
+        goal: { x: 0, y: 4 },
+        stars: [],
+        walls: [],
+        features: ["story-rule"],
+        storyObjects: ["cat", "friend", "gift", "key", "door", "party"],
+        storyObjectOptions: ["cat", "friend", "gift", "key", "door", "party"],
+        storyConditionOptions: ["always", "catHappy", "friendInvited", "hasKey", "doorOpen"],
+        storyActionOptions: ["sayHello", "inviteFriend", "packGift", "takeKey", "openDoor", "startParty"],
+        storyInitialFlags: {},
+        storyGoalFlags: { catHappy: true, friendInvited: true, giftPacked: true, hasKey: true, doorOpen: true, partyStarted: true },
+        requiredStoryActions: ["sayHello", "inviteFriend", "packGift", "takeKey", "openDoor", "startParty"],
+        requiredStoryConditions: ["catHappy", "friendInvited", "hasKey", "doorOpen"],
+        solutionProgram: [
+          { type: "story-rule", event: "cat", condition: "always", action: "sayHello" },
+          { type: "story-rule", event: "friend", condition: "catHappy", action: "inviteFriend" },
+          { type: "story-rule", event: "gift", condition: "friendInvited", action: "packGift" },
+          { type: "story-rule", event: "key", condition: "always", action: "takeKey" },
+          { type: "story-rule", event: "door", condition: "hasKey", action: "openDoor" },
+          { type: "story-rule", event: "party", condition: "doorOpen", action: "startParty" },
+        ],
+      },
+      {
+        id: "story-6",
+        mode: "story",
+        title: "המפתח מגיע רק בסוף ההכנות",
+        instruction: "בשלב הזה השרשרת יותר הדוקה: מרגיעים חתול, מזמינים חברה, אורזים מתנה, ורק אז מותר בכלל לקחת מפתח.",
+        hint: "לכלל של המפתח כדאי לשים תנאי 'אם המתנה ארוזה'.",
+        objective: "לבנות תלות ארוכה שבה כל אירוע פותח את הבא אחריו",
+        maxProgramLength: 6,
+        boardSize: 5,
+        start: { x: 0, y: 4, dir: "E" },
+        goal: { x: 0, y: 4 },
+        stars: [],
+        walls: [],
+        features: ["story-rule"],
+        storyObjects: ["cat", "friend", "gift", "key", "door", "party"],
+        storyObjectOptions: ["cat", "friend", "gift", "key", "door", "party"],
+        storyConditionOptions: ["always", "catHappy", "friendInvited", "giftPacked", "hasKey", "doorOpen"],
+        storyActionOptions: ["sayHello", "inviteFriend", "packGift", "takeKey", "openDoor", "startParty"],
+        storyInitialFlags: {},
+        storyGoalFlags: { catHappy: true, friendInvited: true, giftPacked: true, hasKey: true, doorOpen: true, partyStarted: true },
+        requiredStoryActions: ["sayHello", "inviteFriend", "packGift", "takeKey", "openDoor", "startParty"],
+        requiredStoryConditions: ["catHappy", "friendInvited", "giftPacked", "hasKey", "doorOpen"],
+        solutionProgram: [
+          { type: "story-rule", event: "cat", condition: "always", action: "sayHello" },
+          { type: "story-rule", event: "friend", condition: "catHappy", action: "inviteFriend" },
+          { type: "story-rule", event: "gift", condition: "friendInvited", action: "packGift" },
+          { type: "story-rule", event: "key", condition: "giftPacked", action: "takeKey" },
+          { type: "story-rule", event: "door", condition: "hasKey", action: "openDoor" },
+          { type: "story-rule", event: "party", condition: "doorOpen", action: "startParty" },
+        ],
+      },
+      {
+        id: "story-7",
+        mode: "story",
+        title: "הצגה גדולה עם תאורה",
+        instruction: "כאן מוסיפים עוד שכבה: אחרי שהדלת נפתחת צריך קודם להדליק אורות, ורק אז המסיבה יכולה להתחיל.",
+        hint: "האורות צריכים כלל משלהם, והמסיבה צריכה תנאי של אורות דולקים.",
+        objective: "לשלב 7 חוקים בסדר לוגי אחד שמתאים לכל הסיפור",
+        maxProgramLength: 7,
+        boardSize: 5,
+        start: { x: 0, y: 4, dir: "E" },
+        goal: { x: 0, y: 4 },
+        stars: [],
+        walls: [],
+        features: ["story-rule"],
+        storyObjects: ["cat", "friend", "gift", "key", "door", "lights", "party"],
+        storyObjectOptions: ["cat", "friend", "gift", "key", "door", "lights", "party"],
+        storyConditionOptions: ["always", "catHappy", "friendInvited", "giftPacked", "hasKey", "doorOpen", "lightsOn"],
+        storyActionOptions: ["sayHello", "inviteFriend", "packGift", "takeKey", "openDoor", "turnOnLights", "startParty"],
+        storyInitialFlags: {},
+        storyGoalFlags: { catHappy: true, friendInvited: true, giftPacked: true, hasKey: true, doorOpen: true, lightsOn: true, partyStarted: true },
+        requiredStoryActions: ["sayHello", "inviteFriend", "packGift", "takeKey", "openDoor", "turnOnLights", "startParty"],
+        requiredStoryConditions: ["catHappy", "friendInvited", "giftPacked", "hasKey", "doorOpen", "lightsOn"],
+        solutionProgram: [
+          { type: "story-rule", event: "cat", condition: "always", action: "sayHello" },
+          { type: "story-rule", event: "friend", condition: "catHappy", action: "inviteFriend" },
+          { type: "story-rule", event: "gift", condition: "friendInvited", action: "packGift" },
+          { type: "story-rule", event: "key", condition: "giftPacked", action: "takeKey" },
+          { type: "story-rule", event: "door", condition: "hasKey", action: "openDoor" },
+          { type: "story-rule", event: "lights", condition: "doorOpen", action: "turnOnLights" },
+          { type: "story-rule", event: "party", condition: "lightsOn", action: "startParty" },
+        ],
+      },
     ],
   },
   {
@@ -1414,6 +1566,354 @@ const modules = [
         solutionProgram: [
           { type: "while", check: "wall", action: "right" },
           { type: "routine", routineId: "corridor" },
+        ],
+      },
+      {
+        id: "warehouse-5",
+        title: "סיבוב חכם ואז נסיעה",
+        instruction: "המשאית עומדת בחדר קטן עם יציאה בכיוון משתנה. קודם צריך לבדוק שוב ושוב אם יש קיר ולפנות עד שמוצאים יציאה, ואז לנסוע עד הסוף.",
+        hint: "חזור 4 פעמים על: אם יש קיר מלפנים אז פני ימינה. אחר כך: כל עוד הדרך פנויה, זוזי קדימה.",
+        objective: "להשתמש בתנאי מקונן בתוך חזרה",
+        maxProgramLength: 2,
+        boardSize: 7,
+        start: { x: 3, y: 3, dir: "N" },
+        goal: { x: 3, y: 1 },
+        stars: [{ x: 3, y: 2 }],
+        walls: [{ x: 2, y: 3 }, { x: 4, y: 3 }, { x: 3, y: 4 }, { x: 3, y: 0 }],
+        features: ["forward", "right", "repeat", "condition", "while"],
+        conditionOptions: ["wall"],
+        whileOptions: ["clear"],
+        variants: [
+          {
+            goal: { x: 3, y: 1 },
+            stars: [{ x: 3, y: 2 }],
+            walls: [{ x: 2, y: 3 }, { x: 4, y: 3 }, { x: 3, y: 4 }, { x: 3, y: 0 }],
+          },
+          {
+            goal: { x: 5, y: 3 },
+            stars: [{ x: 4, y: 3 }],
+            walls: [{ x: 2, y: 3 }, { x: 3, y: 2 }, { x: 3, y: 4 }, { x: 6, y: 3 }],
+          },
+          {
+            goal: { x: 3, y: 5 },
+            stars: [{ x: 3, y: 4 }],
+            walls: [{ x: 2, y: 3 }, { x: 4, y: 3 }, { x: 3, y: 2 }, { x: 3, y: 6 }],
+          },
+          {
+            goal: { x: 1, y: 3 },
+            stars: [{ x: 2, y: 3 }],
+            walls: [{ x: 4, y: 3 }, { x: 3, y: 2 }, { x: 3, y: 4 }, { x: 0, y: 3 }],
+          },
+        ],
+        solutionProgram: [
+          {
+            type: "repeat",
+            count: 4,
+            body: {
+              type: "condition",
+              check: "wall",
+              body: { type: "action", action: "right" },
+            },
+          },
+          {
+            type: "while",
+            check: "clear",
+            body: { type: "action", action: "forward" },
+          },
+        ],
+      },
+      {
+        id: "warehouse-6",
+        title: "שלושה מקטעים, קוד אחד",
+        instruction: "עכשיו המסלול בנוי משלושה מקטעים שלמים. בכל מקטע צריך קודם למצוא לאן פונים, ואז לנסוע עד הסוף. בונים שגרה אחת, ומריצים אותה בתוך חזרה.",
+        hint: "הפעילי את קטע() שלוש פעמים בעזרת חזרה.",
+        objective: "להשתמש בלולאה שמפעילה שגרה שבתוכה יש לולאות",
+        maxProgramLength: 1,
+        boardSize: 9,
+        start: { x: 1, y: 1, dir: "N" },
+        goal: { x: 1, y: 5 },
+        stars: [{ x: 3, y: 1 }, { x: 5, y: 3 }, { x: 3, y: 5 }],
+        walls: [{ x: 6, y: 1 }, { x: 5, y: 6 }, { x: 0, y: 5 }],
+        features: ["repeat", "routine"],
+        routines: [
+          {
+            id: "segment",
+            label: "קטע()",
+            description: "מחפשת יציאה על ידי פניות ימינה, ואז נוסעת עד סוף המקטע.",
+            pseudo: "קטע();",
+            js: "runSegment();",
+            steps: [
+              { type: "while", check: "wall", action: "right" },
+              { type: "while", check: "clear", action: "forward" },
+            ],
+          },
+        ],
+        variants: [
+          {
+            start: { x: 1, y: 1, dir: "N" },
+            goal: { x: 1, y: 5 },
+            stars: [{ x: 3, y: 1 }, { x: 5, y: 3 }, { x: 3, y: 5 }],
+            walls: [{ x: 6, y: 1 }, { x: 5, y: 6 }, { x: 0, y: 5 }],
+          },
+          {
+            start: { x: 7, y: 1, dir: "E" },
+            goal: { x: 3, y: 1 },
+            stars: [{ x: 7, y: 3 }, { x: 5, y: 4 }, { x: 3, y: 2 }],
+            walls: [{ x: 8, y: 1 }, { x: 7, y: 5 }, { x: 2, y: 4 }, { x: 3, y: 0 }],
+          },
+          {
+            start: { x: 7, y: 7, dir: "S" },
+            goal: { x: 7, y: 3 },
+            stars: [{ x: 5, y: 7 }, { x: 3, y: 5 }, { x: 5, y: 3 }],
+            walls: [{ x: 8, y: 7 }, { x: 2, y: 7 }, { x: 3, y: 2 }, { x: 8, y: 3 }],
+          },
+        ],
+        solutionProgram: [
+          {
+            type: "repeat",
+            count: 3,
+            body: { type: "routine", routineId: "segment" },
+          },
+        ],
+      },
+      {
+        id: "warehouse-7",
+        title: "שלוש פניות חכמות",
+        instruction: "המסלול מורכב משלושה מקטעים שבכל אחד מהם הכיוון משתנה. כדי להצליח בכל הלוחות צריך בכל מקטע קודם למצוא יציאה, ואז לנסוע עד סוף המסדרון.",
+        hint: "בכל מקטע: חזור 4 פעמים על 'אם יש קיר פני ימינה', ואז 'כל עוד הדרך פנויה זוזי קדימה'.",
+        objective: "לפתור שלושה מקטעים בעזרת תנאי מקונן ולולאה",
+        maxProgramLength: 6,
+        boardSize: 9,
+        start: { x: 1, y: 1, dir: "E" },
+        goal: { x: 2, y: 6 },
+        stars: [{ x: 4, y: 1 }, { x: 6, y: 4 }, { x: 4, y: 6 }],
+        walls: [{ x: 7, y: 1 }, { x: 6, y: 7 }, { x: 1, y: 6 }],
+        features: ["forward", "right", "repeat", "condition", "while"],
+        conditionOptions: ["wall"],
+        whileOptions: ["clear"],
+        variants: [
+          {
+            start: { x: 1, y: 1, dir: "E" },
+            goal: { x: 2, y: 6 },
+            stars: [{ x: 4, y: 1 }, { x: 6, y: 4 }, { x: 4, y: 6 }],
+            walls: [{ x: 7, y: 1 }, { x: 6, y: 7 }, { x: 1, y: 6 }],
+          },
+          {
+            start: { x: 1, y: 2, dir: "E" },
+            goal: { x: 3, y: 5 },
+            stars: [{ x: 4, y: 2 }, { x: 7, y: 4 }, { x: 5, y: 5 }],
+            walls: [{ x: 8, y: 2 }, { x: 7, y: 6 }, { x: 2, y: 5 }],
+          },
+          {
+            start: { x: 2, y: 1, dir: "E" },
+            goal: { x: 1, y: 7 },
+            stars: [{ x: 3, y: 1 }, { x: 5, y: 4 }, { x: 3, y: 7 }],
+            walls: [{ x: 6, y: 1 }, { x: 5, y: 8 }, { x: 0, y: 7 }],
+          },
+        ],
+        solutionProgram: [
+          {
+            type: "repeat",
+            count: 4,
+            body: {
+              type: "condition",
+              check: "wall",
+              body: { type: "action", action: "right" },
+            },
+          },
+          {
+            type: "while",
+            check: "clear",
+            body: { type: "action", action: "forward" },
+          },
+          {
+            type: "repeat",
+            count: 4,
+            body: {
+              type: "condition",
+              check: "wall",
+              body: { type: "action", action: "right" },
+            },
+          },
+          {
+            type: "while",
+            check: "clear",
+            body: { type: "action", action: "forward" },
+          },
+          {
+            type: "repeat",
+            count: 4,
+            body: {
+              type: "condition",
+              check: "wall",
+              body: { type: "action", action: "right" },
+            },
+          },
+          {
+            type: "while",
+            check: "clear",
+            body: { type: "action", action: "forward" },
+          },
+        ],
+      },
+      {
+        id: "warehouse-8",
+        title: "מבוך הספירלה",
+        instruction: "עכשיו יש כבר ארבעה מקטעים ברצף. אותו רעיון עובד, אבל צריך לשמור על סדר מדויק לאורך יותר זמן.",
+        hint: "תבנית קבועה 4 פעמים: מוצאות יציאה, ואז נוסעות עד סוף המסדרון.",
+        objective: "להחזיק אלגוריתם ארוך עם כמה שכבות של לולאות ותנאים",
+        maxProgramLength: 8,
+        boardSize: 9,
+        start: { x: 1, y: 1, dir: "E" },
+        goal: { x: 3, y: 3 },
+        stars: [{ x: 4, y: 1 }, { x: 7, y: 5 }, { x: 5, y: 7 }, { x: 3, y: 5 }],
+        walls: [{ x: 8, y: 1 }, { x: 7, y: 8 }, { x: 2, y: 7 }, { x: 3, y: 2 }],
+        features: ["forward", "right", "repeat", "condition", "while"],
+        conditionOptions: ["wall"],
+        whileOptions: ["clear"],
+        variants: [
+          {
+            start: { x: 1, y: 1, dir: "E" },
+            goal: { x: 3, y: 3 },
+            stars: [{ x: 4, y: 1 }, { x: 7, y: 5 }, { x: 5, y: 7 }, { x: 3, y: 5 }],
+            walls: [{ x: 8, y: 1 }, { x: 7, y: 8 }, { x: 2, y: 7 }, { x: 3, y: 2 }],
+          },
+          {
+            start: { x: 2, y: 1, dir: "E" },
+            goal: { x: 1, y: 2 },
+            stars: [{ x: 4, y: 1 }, { x: 6, y: 4 }, { x: 3, y: 6 }, { x: 1, y: 4 }],
+            walls: [{ x: 7, y: 1 }, { x: 6, y: 7 }, { x: 0, y: 6 }, { x: 1, y: 1 }],
+          },
+          {
+            start: { x: 1, y: 2, dir: "E" },
+            goal: { x: 2, y: 4 },
+            stars: [{ x: 3, y: 2 }, { x: 5, y: 5 }, { x: 3, y: 7 }, { x: 2, y: 5 }],
+            walls: [{ x: 6, y: 2 }, { x: 5, y: 8 }, { x: 1, y: 7 }, { x: 2, y: 3 }],
+          },
+        ],
+        solutionProgram: [
+          {
+            type: "repeat",
+            count: 4,
+            body: {
+              type: "condition",
+              check: "wall",
+              body: { type: "action", action: "right" },
+            },
+          },
+          {
+            type: "while",
+            check: "clear",
+            body: { type: "action", action: "forward" },
+          },
+          {
+            type: "repeat",
+            count: 4,
+            body: {
+              type: "condition",
+              check: "wall",
+              body: { type: "action", action: "right" },
+            },
+          },
+          {
+            type: "while",
+            check: "clear",
+            body: { type: "action", action: "forward" },
+          },
+          {
+            type: "repeat",
+            count: 4,
+            body: {
+              type: "condition",
+              check: "wall",
+              body: { type: "action", action: "right" },
+            },
+          },
+          {
+            type: "while",
+            check: "clear",
+            body: { type: "action", action: "forward" },
+          },
+          {
+            type: "repeat",
+            count: 4,
+            body: {
+              type: "condition",
+              check: "wall",
+              body: { type: "action", action: "right" },
+            },
+          },
+          {
+            type: "while",
+            check: "clear",
+            body: { type: "action", action: "forward" },
+          },
+        ],
+      },
+      {
+        id: "warehouse-9",
+        title: "דחיסת קוד אלופה",
+        instruction: "אותו רעיון של הספירלה, אבל עכשיו נכתוב אותו קצר וחכם: שגרה אחת למקטע, וחזרה עליה 4 פעמים.",
+        hint: "השגרה קטע חכם() כבר עושה 'מצאי יציאה ואז סעי'. נשאר רק להריץ אותה 4 פעמים.",
+        objective: "להשתמש בחזרה מקוננת על שגרה שמכילה תנאים ולולאות",
+        maxProgramLength: 1,
+        boardSize: 9,
+        start: { x: 1, y: 1, dir: "E" },
+        goal: { x: 3, y: 3 },
+        stars: [{ x: 4, y: 1 }, { x: 7, y: 5 }, { x: 5, y: 7 }, { x: 3, y: 5 }],
+        walls: [{ x: 8, y: 1 }, { x: 7, y: 8 }, { x: 2, y: 7 }, { x: 3, y: 2 }],
+        features: ["repeat", "routine"],
+        routines: [
+          {
+            id: "smart-segment",
+            label: "קטע חכם()",
+            description: "מוצאת יציאה עם תנאי מקונן, ואז נוסעת עד סוף המקטע.",
+            pseudo: "קטע חכם();",
+            js: "runSmartSegment();",
+            steps: [
+              {
+                type: "repeat",
+                count: 4,
+                body: {
+                  type: "condition",
+                  check: "wall",
+                  body: { type: "action", action: "right" },
+                },
+              },
+              {
+                type: "while",
+                check: "clear",
+                body: { type: "action", action: "forward" },
+              },
+            ],
+          },
+        ],
+        variants: [
+          {
+            start: { x: 1, y: 1, dir: "E" },
+            goal: { x: 3, y: 3 },
+            stars: [{ x: 4, y: 1 }, { x: 7, y: 5 }, { x: 5, y: 7 }, { x: 3, y: 5 }],
+            walls: [{ x: 8, y: 1 }, { x: 7, y: 8 }, { x: 2, y: 7 }, { x: 3, y: 2 }],
+          },
+          {
+            start: { x: 2, y: 1, dir: "E" },
+            goal: { x: 1, y: 2 },
+            stars: [{ x: 4, y: 1 }, { x: 6, y: 4 }, { x: 3, y: 6 }, { x: 1, y: 4 }],
+            walls: [{ x: 7, y: 1 }, { x: 6, y: 7 }, { x: 0, y: 6 }, { x: 1, y: 1 }],
+          },
+          {
+            start: { x: 1, y: 2, dir: "E" },
+            goal: { x: 2, y: 4 },
+            stars: [{ x: 3, y: 2 }, { x: 5, y: 5 }, { x: 3, y: 7 }, { x: 2, y: 5 }],
+            walls: [{ x: 6, y: 2 }, { x: 5, y: 8 }, { x: 1, y: 7 }, { x: 2, y: 3 }],
+          },
+        ],
+        solutionProgram: [
+          {
+            type: "repeat",
+            count: 4,
+            body: { type: "routine", routineId: "smart-segment" },
+          },
         ],
       },
     ],
@@ -3546,6 +4046,12 @@ function getStoryObjectStatus(objectId, storyState = state.storyState) {
   if (objectId === "friend") {
     return flags.friendInvited ? "הוזמנה" : "עוד לא הוזמנה";
   }
+  if (objectId === "gift") {
+    return flags.giftPacked ? "ארוזה" : "עוד לא ארוזה";
+  }
+  if (objectId === "lights") {
+    return flags.lightsOn ? "דולקים" : "כבויים";
+  }
   if (objectId === "party") {
     return flags.partyStarted ? "התחילה" : "עוד מחכה";
   }
@@ -3581,7 +4087,32 @@ function getCommandTypeValue(item) {
   return item.type;
 }
 
-function getNestableCommandOptions(level = getCurrentLevel()) {
+function getCommandLabelForTypeValue(value, level = getCurrentLevel()) {
+  if (value === "forward" || value === "right" || value === "left") {
+    return commandMeta[value].label;
+  }
+
+  if (value === "repeat") {
+    return "חזרה";
+  }
+
+  if (value === "condition") {
+    return "אם... אז...";
+  }
+
+  if (value === "while") {
+    return "כל עוד...";
+  }
+
+  if (value.startsWith("routine:")) {
+    const routine = findRoutineDefinition(level, value.slice("routine:".length));
+    return routine?.label || "שגרה()";
+  }
+
+  return value;
+}
+
+function getNestableCommandOptions(level = getCurrentLevel(), selectedValue = null) {
   const options = [];
 
   if (level.features.includes("forward")) {
@@ -3608,6 +4139,13 @@ function getNestableCommandOptions(level = getCurrentLevel()) {
     });
   }
 
+  if (selectedValue && !options.some((option) => option.value === selectedValue)) {
+    options.unshift({
+      value: selectedValue,
+      label: getCommandLabelForTypeValue(selectedValue, level),
+    });
+  }
+
   return options;
 }
 
@@ -3615,7 +4153,7 @@ function renderNestedTypePicker(item, level = getCurrentLevel()) {
   const selectedValue = getCommandTypeValue(item);
   return `
     <select class="program-select program-select--nested-kind" data-program-field="commandType" data-command-id="${item.id}" ${item.locked ? "disabled" : ""}>
-      ${getNestableCommandOptions(level)
+      ${getNestableCommandOptions(level, selectedValue)
         .map((option) => `<option value="${option.value}" ${option.value === selectedValue ? "selected" : ""}>${escapeHtml(option.label)}</option>`)
         .join("")}
     </select>
@@ -4799,6 +5337,10 @@ function buildVariantFailureMessage(level, validation) {
 
   if (level.features.includes("while") && usedWhile && !usedCondition) {
     return `הקוד עבד בלוח שמופיע על המסך, אבל הוא לא עובד ${failedText}. לחצי על הלוחות הקטנים ובדקי איפה הלולאה עדיין לא מסתגלת מספיק טוב.`;
+  }
+
+  if (!usedCondition && !usedWhile) {
+    return `הקוד עבד בלוח שמופיע על המסך, אבל הוא לא עובד ${failedText}. בשלב הזה צריך בלוק חכם יותר, כמו שגרה או חזרה על צעד חכם, כדי להתאים את הקוד לכל הלוחות.`;
   }
 
   if (!usedCondition) {
