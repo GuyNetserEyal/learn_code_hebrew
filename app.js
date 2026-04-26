@@ -2138,13 +2138,64 @@ function attachEvents() {
   });
 
   elements.levelRail.addEventListener("click", (event) => {
+    if (state.running) {
+      return;
+    }
+
+    const navButton = event.target.closest("[data-level-nav]");
+    if (navButton) {
+      const module = getCurrentModule();
+      const direction = navButton.getAttribute("data-level-nav");
+      const currentIndex = module.lessons.findIndex((lesson) => lesson.id === state.currentLevelId);
+      const nextIndex = direction === "prev" ? currentIndex - 1 : currentIndex + 1;
+      const targetLesson = module.lessons[nextIndex];
+
+      if (!targetLesson) {
+        return;
+      }
+
+      if (!isLevelUnlocked(module.id, targetLesson.id, state.progress)) {
+        setFeedback("warn", "השלב הבא ייפתח אחרי שתסיימי את השלב הנוכחי.");
+        renderBoardMessage();
+        return;
+      }
+
+      loadLevel(module.id, targetLesson.id, { freshProgram: true, randomize: true });
+      render();
+      return;
+    }
+
     const levelButton = event.target.closest("[data-level-id]");
-    if (!levelButton || state.running) {
+    if (!levelButton) {
       return;
     }
 
     const moduleId = levelButton.getAttribute("data-module-id");
     const levelId = levelButton.getAttribute("data-level-id");
+    loadLevel(moduleId, levelId, { freshProgram: true, randomize: true });
+    render();
+  });
+
+  elements.levelRail.addEventListener("change", (event) => {
+    const select = event.target.closest("[data-level-select]");
+    if (!select || state.running) {
+      return;
+    }
+
+    const moduleId = select.getAttribute("data-module-id") || state.currentModuleId;
+    const levelId = select.value;
+
+    if (!levelId || levelId === state.currentLevelId) {
+      return;
+    }
+
+    if (!isLevelUnlocked(moduleId, levelId, state.progress)) {
+      setFeedback("warn", "השלב הזה עדיין נעול. קודם מסיימים את השלב שלפניו.");
+      renderBoardMessage();
+      select.value = state.currentLevelId;
+      return;
+    }
+
     loadLevel(moduleId, levelId, { freshProgram: true, randomize: true });
     render();
   });
@@ -3128,45 +3179,61 @@ function renderModuleList() {
 
 function renderLevelRail() {
   const module = getCurrentModule();
-  const items = getLevelRailItems(module);
-  const activeIndex = module.lessons.findIndex((lesson) => lesson.id === state.currentLevelId) + 1;
+  const currentIndex = module.lessons.findIndex((lesson) => lesson.id === state.currentLevelId);
+  const activeIndex = currentIndex + 1;
+  const previousLesson = module.lessons[currentIndex - 1] || null;
+  const nextLesson = module.lessons[currentIndex + 1] || null;
+  const nextUnlocked = nextLesson ? isLevelUnlocked(module.id, nextLesson.id, state.progress) : false;
+  const completedCount = module.lessons.filter((lesson) => isLevelCompleted(lesson.id, state.progress)).length;
+  const unlockedCount = module.lessons.filter((lesson) => isLevelUnlocked(module.id, lesson.id, state.progress)).length;
 
   elements.levelRail.innerHTML = `
-    <div class="level-rail__header">
-      <div>
-        <p class="level-rail__eyebrow">${moduleMeta[module.id]?.icon || "✨"} מסלול בתוך העולם</p>
-        <h3>${module.title}</h3>
+    <div class="level-switcher">
+      <div class="level-switcher__summary">
+        <div>
+          <p class="level-switcher__eyebrow">${moduleMeta[module.id]?.icon || "✨"} מסלול בתוך העולם</p>
+          <h3>${module.title}</h3>
+        </div>
+        <span class="level-switcher__counter">שלב ${activeIndex} מתוך ${module.lessons.length}</span>
       </div>
-      <span class="level-rail__counter">שלב ${activeIndex} מתוך ${module.lessons.length}</span>
-    </div>
-    <div class="level-rail__track">
-      ${items
-        .map((lesson) => {
-          const done = isLevelCompleted(lesson.id, state.progress);
-          const active = lesson.id === state.currentLevelId;
-          const unlocked = isLevelUnlocked(module.id, lesson.id, state.progress);
-          const classes = [
-            "level-rail__node",
-            active ? "level-rail__node--active" : "",
-            done ? "level-rail__node--done" : "",
-          ]
-            .filter(Boolean)
-            .join(" ");
+      <div class="level-switcher__controls">
+        <button class="level-switcher__nav" type="button" data-level-nav="prev" ${previousLesson ? "" : "disabled"}>
+          הקודם
+        </button>
+        <div class="level-switcher__select-wrap">
+          <label class="sr-only" for="level-switcher-select">בחירת שלב</label>
+          <select
+            id="level-switcher-select"
+            class="level-switcher__select"
+            data-level-select
+            data-module-id="${module.id}"
+          >
+            ${module.lessons
+              .map((lesson, index) => {
+                const done = isLevelCompleted(lesson.id, state.progress);
+                const active = lesson.id === state.currentLevelId;
+                const unlocked = isLevelUnlocked(module.id, lesson.id, state.progress);
+                const prefix = active ? "▶" : done ? "★" : unlocked ? "○" : "🔒";
+                const suffix = active ? " • עכשיו" : done ? " • הושלם" : unlocked ? "" : " • נעול";
 
-          return `
-            <button
-              class="${classes}"
-              type="button"
-              data-module-id="${module.id}"
-              data-level-id="${lesson.id}"
-              ${unlocked ? "" : "disabled"}
-            >
-              <span class="level-rail__dot">${done ? "★" : module.lessons.findIndex((item) => item.id === lesson.id) + 1}</span>
-              <span class="level-rail__label">${lesson.title}</span>
-            </button>
-          `;
-        })
-        .join("")}
+                return `
+                  <option value="${lesson.id}" ${active ? "selected" : ""} ${unlocked ? "" : "disabled"}>
+                    ${prefix} שלב ${index + 1}: ${escapeHtml(lesson.title)}${suffix}
+                  </option>
+                `;
+              })
+              .join("")}
+          </select>
+        </div>
+        <button class="level-switcher__nav level-switcher__nav--next" type="button" data-level-nav="next" ${nextLesson && nextUnlocked ? "" : "disabled"}>
+          הבא
+        </button>
+      </div>
+      <div class="level-switcher__status-row">
+        <span class="level-switcher__chip level-switcher__chip--active">${escapeHtml(getCurrentLevel().title)}</span>
+        <span class="level-switcher__chip level-switcher__chip--done">${completedCount} הושלמו</span>
+        <span class="level-switcher__chip">${unlockedCount} פתוחים</span>
+      </div>
     </div>
   `;
 }
